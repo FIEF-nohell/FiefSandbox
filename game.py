@@ -18,29 +18,63 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Simple Sandbox")
 
 sand_positions = []
+active_sand = set() 
+
+def is_adjacent_free(x, y):
+    """Check if any adjacent position is free"""
+    positions = [
+        (x, y + SAND_SIZE),          # below
+        (x, y - SAND_SIZE),          # above
+        (x + SAND_SIZE, y),          # right
+        (x - SAND_SIZE, y),          # left
+        (x + SAND_SIZE, y + SAND_SIZE), # diagonal bottom right
+        (x - SAND_SIZE, y + SAND_SIZE), # diagonal bottom left
+        (x + SAND_SIZE, y - SAND_SIZE), # diagonal top right
+        (x - SAND_SIZE, y - SAND_SIZE)  # diagonal top left
+    ]
+    for pos in positions:
+        if pos not in sand_positions:
+            return True
+    return False
 
 def drop_sand():
-    """Update the sand positions so they fall down and spread out"""
-    new_positions = []
-    for x, y in sand_positions:
+    global active_sand
+    new_positions = set(sand_positions)
+    next_active_sand = set()
+
+    for x, y in list(active_sand):  # Convert set to list to safely iterate
+        if (x, y) not in new_positions:  # Ensure position exists before processing
+            continue
+        
         below = (x, y + SAND_SIZE)
         below_left = (x - SAND_SIZE, y + SAND_SIZE)
         below_right = (x + SAND_SIZE, y + SAND_SIZE)
+        
+        moved = False
+        if below not in new_positions and 0 <= below[1] < SCREEN_HEIGHT - SAND_SIZE:
+            new_positions.remove((x, y))
+            new_positions.add(below)
+            moved = True
+        elif below_left not in new_positions and 0 <= below_left[0] < SCREEN_WIDTH and 0 <= below_left[1] < SCREEN_HEIGHT - SAND_SIZE:
+            new_positions.remove((x, y))
+            new_positions.add(below_left)
+            moved = True
+        elif below_right not in new_positions and 0 <= below_right[0] < SCREEN_WIDTH and 0 <= below_right[1] < SCREEN_HEIGHT - SAND_SIZE:
+            new_positions.remove((x, y))
+            new_positions.add(below_right)
+            moved = True
 
-        # Check directly below first
-        if below not in sand_positions and 0 <= below[1] < SCREEN_HEIGHT - SAND_SIZE:
-            new_positions.append(below)
-        # If that's occupied, check below-left
-        elif below_left not in sand_positions and 0 <= below_left[0] < SCREEN_WIDTH and 0 <= below_left[1] < SCREEN_HEIGHT - SAND_SIZE:
-            new_positions.append(below_left)
-        # If that's occupied too, check below-right
-        elif below_right not in sand_positions and 0 <= below_right[0] < SCREEN_WIDTH and 0 <= below_right[1] < SCREEN_HEIGHT - SAND_SIZE:
-            new_positions.append(below_right)
-        # If all three are occupied, the sand particle doesn't move
-        else:
-            new_positions.append((x, y))
+        if moved:
+            # Check positions adjacent to the new position to see if they should be marked as active
+            for dx in [-SAND_SIZE, 0, SAND_SIZE]:
+                for dy in [-SAND_SIZE, 0, SAND_SIZE]:
+                    adj_x = x + dx
+                    adj_y = y + dy
+                    if (adj_x, adj_y) in new_positions and is_adjacent_free(adj_x, adj_y):
+                        next_active_sand.add((adj_x, adj_y))
 
-    sand_positions[:] = new_positions  # Update the sand positions
+    active_sand = next_active_sand
+    sand_positions[:] = list(new_positions)
 
 
 
@@ -51,7 +85,7 @@ def draw_sand():
 
 def main():
     clock = pygame.time.Clock()
-    placing_sand = False
+    placing_sand = False  # Track if we're currently placing sand
 
     while True:
         for event in pygame.event.get():
@@ -59,15 +93,11 @@ def main():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = pygame.mouse.get_pos()
-                x = (x // SAND_SIZE) * SAND_SIZE  # Make the sand placement grid-aligned
-                y = (y // SAND_SIZE) * SAND_SIZE
                 if event.button == 1:  # Left click
-                    sand_positions.append((x, y))
-                elif event.button == 3:  # Right click
                     placing_sand = True
-            if event.type == pygame.MOUSEBUTTONUP and event.button == 3:  # Release right click
-                placing_sand = False
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:  # Release left click
+                    placing_sand = False
 
         if placing_sand:
             x, y = pygame.mouse.get_pos()
@@ -75,6 +105,14 @@ def main():
             y = (y // SAND_SIZE) * SAND_SIZE
             if (x, y) not in sand_positions:
                 sand_positions.append((x, y))
+                active_sand.add((x, y))
+                # Also, check the surrounding particles to activate them
+                for dx in [-SAND_SIZE, 0, SAND_SIZE]:
+                    for dy in [-SAND_SIZE, 0, SAND_SIZE]:
+                        adj_x = x + dx
+                        adj_y = y + dy
+                        if (adj_x, adj_y) in sand_positions:
+                            active_sand.add((adj_x, adj_y))
 
         drop_sand()
 
@@ -83,6 +121,7 @@ def main():
 
         pygame.display.flip()
         clock.tick(60)
+
 
 
 if __name__ == "__main__":
