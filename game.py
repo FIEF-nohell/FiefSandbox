@@ -20,11 +20,28 @@ pygame.display.set_caption("Simple Sandbox")
 sand_positions = []
 
 def drop_sand():
-    """Update the sand positions so they fall down"""
-    for i in range(len(sand_positions) - 1, -1, -1):
-        x, y = sand_positions[i]
-        if y + SAND_SIZE < SCREEN_HEIGHT and (x, y + SAND_SIZE) not in sand_positions:
-            sand_positions[i] = (x, y + SAND_SIZE)
+    """Update the sand positions so they fall down and spread out"""
+    new_positions = []
+    for x, y in sand_positions:
+        below = (x, y + SAND_SIZE)
+        below_left = (x - SAND_SIZE, y + SAND_SIZE)
+        below_right = (x + SAND_SIZE, y + SAND_SIZE)
+
+        # Check directly below first
+        if below not in sand_positions and 0 <= below[1] < SCREEN_HEIGHT:
+            new_positions.append(below)
+        # If that's occupied, check below-left
+        elif below_left not in sand_positions and 0 <= below_left[0] < SCREEN_WIDTH:
+            new_positions.append(below_left)
+        # If that's occupied too, check below-right
+        elif below_right not in sand_positions and below_right[0] < SCREEN_WIDTH:
+            new_positions.append(below_right)
+        # If all three are occupied, the sand particle doesn't move
+        else:
+            new_positions.append((x, y))
+
+    sand_positions[:] = new_positions  # Update the sand positions
+
 
 def draw_sand():
     """Draw the sand particles"""
