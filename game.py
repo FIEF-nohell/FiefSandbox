@@ -10,7 +10,7 @@ SCREEN_HEIGHT = 600
 SAND_SIZE = 4
 
 # Colors
-WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
 
 # Setup the display
@@ -46,7 +46,7 @@ def main():
 
         drop_sand()
 
-        screen.fill(WHITE)
+        screen.fill(BLACK)
         draw_sand()
 
         pygame.display.flip()
