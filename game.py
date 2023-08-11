@@ -5,6 +5,7 @@ import sys
 pygame.init()
 
 # Constants
+FPS_CAP = 100
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SAND_SIZE = 4
@@ -134,7 +135,7 @@ def main():
         draw_text(f"FPS: {fps}", 10, 50)
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(FPS_CAP)
 
 
 
