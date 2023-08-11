@@ -8,17 +8,25 @@ pygame.init()
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SAND_SIZE = 4
+FONT = pygame.font.SysFont(None, 36) 
 
 # Colors
 BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
 
 # Setup the display
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Simple Sandbox")
+pygame.font.init()  # Initialize Pygame's font system
 
 sand_positions = []
 active_sand = set() 
+
+def draw_text(text, x, y, color=WHITE):
+    """Helper function to render and draw text onto the screen."""
+    text_surf = FONT.render(text, True, color)
+    screen.blit(text_surf, (x, y))
 
 def is_adjacent_free(x, y):
     """Check if any adjacent position is free"""
@@ -115,9 +123,15 @@ def main():
                             active_sand.add((adj_x, adj_y))
 
         drop_sand()
-
+        
         screen.fill(BLACK)
         draw_sand()
+
+        # Drawing the counter and FPS
+        num_sand_particles = len(sand_positions)
+        draw_text(f"Sand Particles: {num_sand_particles}", 10, 10)
+        fps = int(clock.get_fps())
+        draw_text(f"FPS: {fps}", 10, 50)
 
         pygame.display.flip()
         clock.tick(60)
