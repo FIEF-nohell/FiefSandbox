@@ -28,19 +28,20 @@ def drop_sand():
         below_right = (x + SAND_SIZE, y + SAND_SIZE)
 
         # Check directly below first
-        if below not in sand_positions and 0 <= below[1] < SCREEN_HEIGHT:
+        if below not in sand_positions and 0 <= below[1] < SCREEN_HEIGHT - SAND_SIZE:
             new_positions.append(below)
         # If that's occupied, check below-left
-        elif below_left not in sand_positions and 0 <= below_left[0] < SCREEN_WIDTH:
+        elif below_left not in sand_positions and 0 <= below_left[0] < SCREEN_WIDTH and 0 <= below_left[1] < SCREEN_HEIGHT - SAND_SIZE:
             new_positions.append(below_left)
         # If that's occupied too, check below-right
-        elif below_right not in sand_positions and below_right[0] < SCREEN_WIDTH:
+        elif below_right not in sand_positions and 0 <= below_right[0] < SCREEN_WIDTH and 0 <= below_right[1] < SCREEN_HEIGHT - SAND_SIZE:
             new_positions.append(below_right)
         # If all three are occupied, the sand particle doesn't move
         else:
             new_positions.append((x, y))
 
     sand_positions[:] = new_positions  # Update the sand positions
+
 
 
 def draw_sand():
