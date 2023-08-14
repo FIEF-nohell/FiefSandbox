@@ -10,7 +10,7 @@ A fun and minimalistic sandbox game where you can place sand particles and watch
 * Sand particles fall and settle naturally.
 * Display counter for active sand particles.
 * FPS display to monitor game performance.
-## Installation
+## Installation Process
 
 ### Prerequisites
 * Python (3.x recommended)
